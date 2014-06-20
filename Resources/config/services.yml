@@ -1,0 +1,20 @@
+parameters:
+#    upload_data.example.class: Manuelj555\Bundle\UploadDataBundle\Example
+
+services:
+    upload_data.reader.csv:
+        class: Manuelj555\Bundle\UploadDataBundle\Reader\CsvReader
+        
+    upload_data.processor:
+        class: Manuelj555\Bundle\UploadDataBundle\DataProcessor
+        arguments:
+            - @upload_data.reader.csv
+            - @upload_data.validator
+            - @event_dispatcher
+            
+    upload_data.validator:
+        class: Manuelj555\Bundle\UploadDataBundle\Validator\Validator
+        arguments:
+            - @validator
+            - @event_dispatcher
+            - @service_container

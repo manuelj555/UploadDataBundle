@@ -1,0 +1,11 @@
+{
+    "name": "manuelj555/upload-data-bundle",
+    "description": "Bundle que permite leer archivos de datos de manera sencilla",
+    "require": {
+        "php": ">=5.3.3"
+    },
+    "autoload":{
+        "psr-0": { "Manuelj555\\Bundle\\UploadDataBundle" : "" }
+    },
+    "target-dir": "Manuelj555/Bundle/UploadDataBundle"
+}
