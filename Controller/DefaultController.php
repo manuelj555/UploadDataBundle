@@ -15,6 +15,7 @@ class DefaultController extends Controller
     public function indexAction(Request $request)
     {
         /* @var $p DataProcessor */
+        $r = $this->get('upload_data.reader.csv');
         $p = $this->get('upload_data.processor');
         $file = __DIR__ . '/hola.csv';
 
@@ -26,8 +27,8 @@ class DefaultController extends Controller
                 ->setColumnsAssociation(array(
             'firstName' => 0, 'lastName' => 1
         ));
-
-        $p->setFileHeaderColumns($file, $config);
+        
+        $data = $r->read($file, $config);
 
         $form = $this->createForm(new ColumnsType(), $config);
 
@@ -37,7 +38,7 @@ class DefaultController extends Controller
 
         if ($form->isValid()) {
 
-            $data = $p->process($file, $config);
+            $data = $p->process($data, $config);
 
             var_dump($data);
         }

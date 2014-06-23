@@ -13,6 +13,7 @@ namespace Manuelj555\Bundle\UploadDataBundle;
 
 use InvalidArgumentException;
 use Manuelj555\Bundle\UploadDataBundle\Config\ConfigInterface;
+use Manuelj555\Bundle\UploadDataBundle\Event\PreReadDataEvent;
 use Manuelj555\Bundle\UploadDataBundle\Event\ReadDataEvent;
 use Manuelj555\Bundle\UploadDataBundle\Reader\DataReaderInterface;
 use Manuelj555\Bundle\UploadDataBundle\Validator\Validator;
@@ -56,35 +57,24 @@ class DataProcessor
         $this->dispatcher = $dispatcher;
     }
 
-    public function process($filename, ConfigInterface $config)
+    public function process(LoadedData $data, ConfigInterface $config)
     {
-        $data = $this->loadData($filename, $config);
+        $data = $this->loadData($data, $config);
 
         $event = new ReadDataEvent($data);
         $name = sprintf(Events::POST_READ, $config->getName());
         $this->dispatcher->dispatch($name, $event);
-        
+
         $this->validator->validate($config, $event->getData());
 
         return $event->getData();
     }
 
-    public function setFileHeaderColumns($filename, ConfigInterface $config)
-    {
-        $data = $this->reader->read($filename);
-        $headers = $this->reader->getHeaders($data, $config);
-        
-        $config->setFileColumns($headers);
-    }
-
-    protected function loadData($filename, ConfigInterface $config)
+    protected function loadData(LoadedData $data, ConfigInterface $config)
     {
         $rowClass = $this->getRowClass($config);
-        $data = $this->reader->read($filename);
-        $headers = $this->reader->getHeaders($data, $config);
-        $data = $this->reader->getData($data, $config);
 
-        $event = new ReadDataEvent($data);
+        $event = new PreReadDataEvent($data);
         $name = sprintf(Events::PRE_READ, $config->getName());
         $this->dispatcher->dispatch($name, $event);
 
@@ -93,17 +83,17 @@ class DataProcessor
 
         $result = new ReadedData();
 
-        foreach ((array) $event->getData() as $rowIndex => $rowData) {
+        foreach ($event->getData() as $rowIndex => $rowData) {
+            $items = array();
             foreach ($rowData as $column => $value) {
-                unset($data[$rowIndex][$column]);
                 if (array_key_exists($column, $columnsName)) {
-                    $data[$rowIndex][$columnsName[$column]] = $value;
+                    $items[$columnsName[$column]] = $value;
                 }
             }
-            $rowObject = $normalizer->denormalize($data[$rowIndex], new $rowClass());
+            $rowObject = $normalizer->denormalize($items, new $rowClass());
             $result[] = $rowObject;
         }
-
+        
         return $result;
     }
 

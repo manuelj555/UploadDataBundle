@@ -16,12 +16,16 @@ use Symfony\Component\EventDispatcher\Event;
  *
  * @author Manuel Aguirre <programador.manuel@gmail.com>
  */
-class ReadDataEvent extends Event
+class PreReadDataEvent extends Event
 {
 
+    /**
+     *
+     * @var LoadedData
+     */
     protected $data;
 
-    function __construct($data = null)
+    function __construct(LoadedData $data = null)
     {
         $this->data = $data;
     }

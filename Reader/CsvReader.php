@@ -35,7 +35,7 @@ class CsvReader implements DataReaderInterface
         $this->delimiter = $delimiter;
     }
 
-    public function read($filename)
+    public function read($filename, ConfigInterface $config)
     {
         if (!file_exists($filename)) {
             throw new InvalidArgumentException(sprintf('File "%s" not found.', $filename));
@@ -46,7 +46,12 @@ class CsvReader implements DataReaderInterface
         $file->setFlags(SplFileObject::READ_CSV | SplFileObject::SKIP_EMPTY | SplFileObject::DROP_NEW_LINE);
         $file->setCsvControl($this->getDelimiter());
 
-        return iterator_to_array($file);
+        $data = iterator_to_array($file);
+
+        return new \Manuelj555\Bundle\UploadDataBundle\LoadedData(
+                $this->getHeaders($data, $config)
+                , $this->getData($data, $config)
+        );
     }
 
     public function supports($filename)
@@ -54,14 +59,15 @@ class CsvReader implements DataReaderInterface
         return strtolower(pathinfo($filename, PATHINFO_EXTENSION)) === 'csv';
     }
 
-    public function getHeaders($data, ConfigInterface $config)
+    protected function getHeaders($data, ConfigInterface $config)
     {
         list($col, $row) = $config->getHeadersPosition();
+        $config->setFileColumns($data[$row]);
 
         return $data[$row];
     }
 
-    public function getData($data, ConfigInterface $config)
+    protected function getData($data, ConfigInterface $config)
     {
         list($col, $row) = $config->getHeadersPosition();
         unset($data[$row]);

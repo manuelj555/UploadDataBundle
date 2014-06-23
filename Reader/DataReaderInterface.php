@@ -12,6 +12,7 @@
 namespace Manuelj555\Bundle\UploadDataBundle\Reader;
 
 use Manuelj555\Bundle\UploadDataBundle\Config\ConfigInterface;
+use Manuelj555\Bundle\UploadDataBundle\LoadedData;
 
 /**
  *
@@ -22,8 +23,12 @@ interface DataReaderInterface
 
     public function supports($filename);
 
-    public function read($filename);
-
-    public function getHeaders($filename, ConfigInterface $config);
-    public function getData($filename, ConfigInterface $config);
+    /**
+     * 
+     * @param type $filename
+     * @param ConfigInterface $config
+     * 
+     * @return LoadedData
+     */
+    public function read($filename, ConfigInterface $config);
 }
